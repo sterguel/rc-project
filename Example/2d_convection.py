@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 nx = 201 #Number of elements in x direction
 ny = 201 #Number of elements in y direction
 nt = 100 #Number of timesteps
-cx = 0.5 #x-component of velocity
-cy = 0.7 #y-component of velocity
+cx = 2 #x-component of velocity
+cy = 3 #y-component of velocity
 x_range = 4 #Range of x
 y_range = 4 #Range of y
 dx = x_range/nx #Cell size in x direction
