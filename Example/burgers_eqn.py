@@ -35,7 +35,7 @@ nt = 500 #Number of time steps
 nu = 0.07 #Viscosity
 dt = 0.0002 #Timestep size
 
-#Be careful when choosing the boundary conditions; entire simulation breaks if time or space steps are too big (as one should expect when using FDM to solve DEs)
+#Be careful when choosing the simulation parameters; entire simulation breaks if time or space steps are too big (as one should expect when using FDM to solve DEs)
 
 #Turning initial condition into an array containing its values at discrete points
 x = np.linspace(0,x_range,nx)
