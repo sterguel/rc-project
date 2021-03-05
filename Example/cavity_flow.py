@@ -126,5 +126,5 @@ X,Y = np.meshgrid(x,y)
 fig = plt.figure(figsize=(11,7), dpi=100)
 plt.quiver(X[::2, ::2], Y[::2, ::2], u[::2, ::2], v[::2, ::2]) 
 plt.xlabel('X')
-plt.ylabel('Y');
+plt.ylabel('Y')
 plt.show()
