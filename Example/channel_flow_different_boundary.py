@@ -59,7 +59,8 @@ v[-1,:] = 0
 #calculate actual grid
 def f(x):
     #issues with rounding errors even though this function is symmetric?
-    return round(np.exp(-(x-4)**2),4)
+    #return round(np.exp(-(x-4)**2),4)
+    return 0
 
 #more y grid points are needed for a non symmetric function
 
@@ -72,7 +73,7 @@ dys2 = [fvs[i+1] - fvs[i-1] for i in range(1,len(fvs) - 1) ]
 
 dy = np.reshape(nx *dys, ( nx,len(dys),)).T
 dy2 = np.reshape(nx *dys2, ( nx,len(dys2),)).T
-
+ocf = 2/(dy[1:,1:-1] * dy[:-1,1:-1] * (dy[1:,1:-1] + dy[:-1,1:-1]))
 def get_b(b,u,v):
     #Function for computing inhomogeneous term of the Poisson pressure equation
     b[1:-1, 1:-1] = rho * (
@@ -111,24 +112,33 @@ def get_pressure(p,u,v,b):
     pn = np.empty_like(p)
     pn = p.copy()
     nit = 50 #Pseudotime to advance equation
+    da = 2/(dx**2) + 2/(dy[1:,1:-1] * dy[:-1, 1:-1])
+    da = 1/da
     for q in range(nit):
         pn = p.copy()
-        p[1:-1,1:-1] = ( #Determining pressure
-            ( ( ((pn[1:-1,2:] + pn[1:-1,0:-2])*(dy**2)) +  ((pn[2:,1:-1] + pn[0:-2,1:-1])*(dx**2)) ) / (2*((dx**2) + (dy**2))) )
-            - ( ( ((dx**2)*(dy**2)) / (2*((dx**2) + (dy**2))) ) * b[1:-1,1:-1] ) #The b function as defined above makes my life a lot easier in this line
-            )
+        #p[1:-1,1:-1] = ( #Determining pressure
+        #    ( ( ((pn[1:-1,2:] + pn[1:-1,0:-2])*(dy**2)) +  ((pn[2:,1:-1] + pn[0:-2,1:-1])*(dx**2)) ) / (2*((dx**2) + (dy**2))) )
+        #    - ( ( ((dx**2)*(dy**2)) / (2*((dx**2) + (dy**2))) ) * b[1:-1,1:-1] ) #The b function as defined above makes my life a lot easier in this line
+        #    )
         
+        p[1:-1,1:-1] = da * (-b[1:-1,1:-1] + (pn[1:-1,2:] + pn[1:-1,0:-2])/dx**2 + ocf * (dy[ :-1 , 1:-1] * pn[2:,1:-1] + dy[ 1: , 1:-1] * pn[:-2, 1:-1] ) )
+
+
         #Periodic pressure BC at x=xmax
-        p[1:-1,-1] = (
-            ( ( ((pn[1:-1,0] + pn[1:-1,-2])*(dy**2)) +  ((pn[2:,-1] + pn[0:-2,-1])*(dx**2)) ) / (2*((dx**2) + (dy**2))) )
-            - ( ( ((dx**2)*(dy**2)) / (2*((dx**2) + (dy**2))) ) * b[1:-1,-1] )
-        )
+        #p[1:-1,-1] = (
+        #    ( ( ((pn[1:-1,0] + pn[1:-1,-2])*(dy**2)) +  ((pn[2:,-1] + pn[0:-2,-1])*(dx**2)) ) / (2*((dx**2) + (dy**2))) )
+        #    - ( ( ((dx**2)*(dy**2)) / (2*((dx**2) + (dy**2))) ) * b[1:-1,-1] )
+        #)
+        p[1:-1,-1] = da[:,0] * (-b[1:-1,-1] + (pn[1:-1,0] + pn[1:-1,-2])/dx**2 + ocf[:,0] * (dy[ :-1 , 0] * pn[2:,-1] + dy[ 1: ,0 ] * pn[:-2, -1] ) )
 
         #Periodic pressure BC at x=0
-        p[1:-1,0] = (
-            ( ( ((pn[1:-1,1] + pn[1:-1,-1])*(dy**2)) +  ((pn[2:,0] + pn[0:-2,0])*(dx**2)) ) / (2*((dx**2) + (dy**2))) )
-            - ( ( ((dx**2)*(dy**2)) / (2*((dx**2) + (dy**2))) ) * b[1:-1,0] )
-            )
+        #p[1:-1,0] = (
+        #    ( ( ((pn[1:-1,1] + pn[1:-1,-1])*(dy**2)) +  ((pn[2:,0] + pn[0:-2,0])*(dx**2)) ) / (2*((dx**2) + (dy**2))) )
+        #    - ( ( ((dx**2)*(dy**2)) / (2*((dx**2) + (dy**2))) ) * b[1:-1,0] )
+        #    )
+        p[1:-1,0] = da[:,0] * (-b[1:-1,0] + (pn[1:-1,1] + pn[1:-1,-1])/dx**2 + ocf[:,0] * (dy[ :-1 , 0] * pn[2:,0] + dy[ 1: ,0 ] * pn[:-2, 0] ) )
+
+        
 
         #Wall boundary condition for pressures dp/dy = 0 at walls y=0,ymax
         #Change this to change the shape of channel
@@ -156,15 +166,17 @@ for n in range(nt): #Iterating through time
     #FDM to solve for velocity components
     #x-component of velocity
     u[1:-1,1:-1] = (un[1:-1,1:-1] - (un[1:-1,1:-1]*(dt/dx)*(un[1:-1,1:-1] - un[1:-1,0:-2]))
-    - (vn[1:-1,1:-1]*(dt/dy)*(un[1:-1,1:-1] - un[0:-2,1:-1]))
+    - (vn[1:-1,1:-1]*(dt/dy[1:,1:-1])*(un[1:-1,1:-1] - un[0:-2,1:-1]))
     - (((dt)/(rho*2*dx)) * (p[1:-1,2:] - p[1:-1,0:-2]))
-    + nu*(((dt/(dx**2))*(un[1:-1,2:] - (2*un[1:-1,1:-1]) + un[1:-1,0:-2])) + ((dt/(dy**2))*(un[2:,1:-1] - (2*un[1:-1,1:-1]) + un[0:-2,1:-1])))
+    + nu*(((dt/(dx**2))*(un[1:-1,2:] - (2*un[1:-1,1:-1]) + un[1:-1,0:-2])) 
+    + ( ocf * dt * ( dy[:-1,1:-1]*un[2:,1:-1] - (dy[1:,1:-1] + dy[:-1,1:-1]) *un[1:-1,1:-1] + dy[1:,1:-1] * un[0:-2,1:-1])  ))
     + dt*Fx) #Last line added a force term to represent contribution to the momentum from force being applied.
     #y-component of velocity
     v[1:-1,1:-1] = (vn[1:-1,1:-1] - (vn[1:-1,1:-1]*(dt/dx)*(vn[1:-1,1:-1] - un[1:-1,0:-2]))
-    - (vn[1:-1,1:-1]*(dt/dy)*(vn[1:-1,1:-1] - vn[0:-2,1:-1]))
-    - (((dt)/(rho*2*dy)) * (p[2:,1:-1] - p[0:-2,1:-1]))
-    + nu*(((dt/(dx**2))*(vn[1:-1,2:] - (2*vn[1:-1,1:-1]) + vn[1:-1,0:-2])) + ((dt/(dy**2))*(vn[2:,1:-1] - (2*vn[1:-1,1:-1]) + vn[0:-2,1:-1]))))
+    - (vn[1:-1,1:-1]*(dt/dy[1:,1:-1])*(vn[1:-1,1:-1] - vn[0:-2,1:-1]))
+    - (((dt)/(rho*2*dy[1:,1:-1])) * (p[2:,1:-1] - p[0:-2,1:-1]))
+    + nu*(((dt/(dx**2))*(vn[1:-1,2:] - (2*vn[1:-1,1:-1]) + vn[1:-1,0:-2])) 
+    +( ocf * dt * ( dy[:-1,1:-1]*vn[2:,1:-1] - (dy[1:,1:-1] + dy[:-1,1:-1]) *vn[1:-1,1:-1] + dy[1:,1:-1] * vn[0:-2,1:-1])  )) )
 
     #Setting periodic BCs for velocities
     #Note that the periodic BCs for velocities is commented out.
@@ -205,7 +217,7 @@ for n in range(nt): #Iterating through time
 
 #Plots velocity vector throughout fluid
 x = np.linspace(0,x_range,nx)
-y = np.linspace(0,y_range,ny)
+y = fvs
 X,Y = np.meshgrid(x,y)
 
 fig = plt.figure(figsize=(11,7), dpi=100)
