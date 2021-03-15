@@ -3,18 +3,16 @@
 # imports
 import numpy as np
 import matplotlib.pyplot as plt
-from channel_flow.py import x_range, nx, y_range, ny
+from channel_flow import *
 
 # quiver plot
 
 # Plots velocity vector throughout fluid
-
+'''
 # make grid
 x = np.linspace(0, x_range, nx)
 y = np.linspace(0, y_range, ny)
-X, Y = np.meshgrid(x, y)
 
-'''
 fig = plt.figure(figsize=(11,7), dpi=100)
 plt.quiver(X[::2, ::10], Y[::2, ::10], u[::2, ::10], v[::2, ::10]) 
 plt.xlabel('X')
@@ -23,8 +21,6 @@ plt.show()
 
 def make_stream_plot(x, y, ):
     dfs
-
-'''
 
 u = np.ones((10, 10))  # x-component to the right
 v = np.zeros((10, 10))  # y-component zero
@@ -38,12 +34,20 @@ ax.yaxis.set_ticks([])
 ax.set_title('Stream Plot of Field Lines')
 
 plt.show()
+'''
 
-#streamplot with coloured velocity
+# attempt
+x = np.arange(0, 10)
+y = np.arange(0, 10)
+X, Y = np.meshgrid(x, y)
+u = np.ones((10, 10))  # x-component to the right
+v = np.zeros((10, 10))  # y-component zero
+
+# streamplot with coloured velocity
 fig, ax = plt.subplots()
 
-X,Y = np.meshgrid(x,y)
-stream = ax.streamplot(X,Y,u,v, density = 1, color=u, cmap=plt.cm.Reds, )
+X, Y = np.meshgrid(x, y)
+stream = ax.streamplot(X, Y, u, v, density=1, color=u, cmap=plt.cm.Reds, )
 ax.set_title('Fluid Velocities in Unblocked Channel')
 plt.xlabel("Arbitrary length along vessel")
 plt.ylabel("Arbitrary length across vessel")
@@ -51,14 +55,16 @@ colours = plt.colorbar(stream.lines)
 colours.set_label("Velocity of fluid")
 plt.show()
 
-#streamplot with coloured velocity
+# streamplot with coloured velocity
 fig, ax = plt.subplots()
 
-X,Y = np.meshgrid(x,y)
-stream = ax.streamplot(X,Y,u,v, density = 1, color=p, cmap=plt.cm.Reds, )
+'''
+X, Y = np.meshgrid(x, y)
+stream = ax.streamplot(X, Y, u, v, density=1, color=p, cmap=plt.cm.Reds, )
 ax.set_title('Fluid Velocities in Unblocked Channel')
 plt.xlabel("Arbitrary length along vessel")
 plt.ylabel("Arbitrary length across vessel")
 colours = plt.colorbar(stream.lines)
 colours.set_label("Pressure of fluid particles")
 plt.show()
+'''
