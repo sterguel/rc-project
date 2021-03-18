@@ -71,6 +71,22 @@ if max(fvs) < y_range:
 fvs.sort()
 finvmap = [fvs.index(f(i*dx)) for i in range(nx)]
 
+inside_mask = np.zeros((ny,nx,))
+ybottom_mask = np.zeros((ny,nx,))
+dxu_mask = np.zeros((ny,nx,))
+dxl_mask = np.zeros((ny,nx,))
+dyu_mask = np.zeros((ny,nx,))
+dyl_mask = np.zeros((ny,nx,))
+for j in range(ny):
+    for i in range(nx):
+        def interior(i,j):
+            return (j > finvmap[i]) and (j < ny - 1) and (i > 0) and (i<nx - 1)
+        inside_mask[j,i] = interior(i,j)
+        ybottom_mask[j,i] = j == finvmap[i]
+        dxu_mask[j,i] = interior(i-1,j)
+        dxl_mask[j,i] = interior(i+1,j)
+        dyu_mask = interior(i,j-1)
+        dyl_mask = interior(i,j+1)
 
 dys =  [fvs[i] - fvs[i-1] for i in range(1, len(fvs))]
 dys2 = [fvs[i+1] - fvs[i-1] for i in range(1,len(fvs) - 1) ]
@@ -80,18 +96,18 @@ dy2 = np.reshape(nx *dys2, ( nx,len(dys2),)).T
 ocf = 2/(dy[1:,1:-1] * dy[:-1,1:-1] * dy2[:,1:-1])
 def get_b(b,u,v):
     #Function for computing inhomogeneous term of the Poisson pressure equation
-    b[1:-1, 1:-1] = rho * (
-        ((1/dt) * ( ((u[1:-1,2:] - u[1:-1,0:-2])/(2*dx)) + ((v[2:,1:-1] - v[0:-2,1:-1])/dy2[:,1:-1]) ))
-        -  ((u[1:-1,2:] - u[1:-1,0:-2])/(2*dx))**2
-        - 2*( ((u[2:,1:-1] - u[0:-2,1:-1])/dy2[:,1:-1]) * ((v[1:-1,2:] - v[1:-1,0:-2])/(2*dx)) )
-        - ((v[2:,1:-1] - v[0:-2,1:-1])/dy2[:,1:-1])**2 
+    b[inside_mask] = rho * (
+        ((1/dt) * ( ((u[dxu_mask] - u[dxl_mask])/(2*dx)) + ((v[dyu_mask] - v[dyl_mask])/dy2[inside_mask[1:-1,:]]) ))
+        -  ((u[dxu_mask] - u[dxl_mask])/(2*dx))**2
+        - 2*( ((u[dyu_mask] - u[dyl_mask])/dy2[inside_mask[1:-1,:]]) * ((v[dxu_mask] - v[dxl_mask])/(2*dx)) )
+        - ((v[dyu_mask] - v[dyl_mask])/dy2[inside_mask[1:-1,:]])**2 
         )
 
     #Defining pressure boundary conditions along x-axis
     
     #Periodic boundary conditions for pressure at x=xmax
     b[1:-1,-1] = rho * (
-        ((1/dt) * ( ((u[1:-1,0] - u[1:-1,-2])/(2*dx)) + ((v[2:,-1] - v[0:-2,-1])/dy2[:,-1]) ))
+        ((1/dt) * ( ((u[1:-1,0] - u[1:-1,-2])/(2*dx)) + ((v[:,-1][dyu_mask[:,-1]] - v[0:-2,-1])/dy2[:,-1]) ))
         - ( ((u[1:-1,0] - u[1:-1,-2])/(2*dx))**2)
         - 2*( ((u[2:,-1] - u[0:-2,-1])/dy2[:,-1]) * ((v[1:-1,0] - v[1:-1,-2])/(2*dx)) )
         - ( ((v[2:,-1] - v[0:-2,-1])/dy2[:,-1])**2 )

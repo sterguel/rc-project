@@ -59,10 +59,10 @@ v[-1,:] = 0
 #calculate actual grid
 def f(x):
     #issues with rounding errors even though this function is symmetric?
-    return round(np.exp(-(x-4)**2),2)
+    return round(0.75 * np.exp(-(x-4)**2/2),2)
     #return 0
 def f_d(x):
-    return round(-2 * (x-4)* np.exp(-(x-4)**2),2)
+    return round(-2 * (x-4)* np.exp(-(x-4)**2),3)
 #more y grid points are needed for a non symmetric function
 
 fvs = list(set([f(dx*i) for i in range(nx)]))
@@ -71,6 +71,17 @@ if max(fvs) < y_range:
 fvs.sort()
 finvmap = [fvs.index(f(i*dx)) for i in range(nx)]
 
+inside_mask = np.zeros((ny,nx,),dtype=np.bool)
+ybottom_mask = np.zeros((ny,nx,),dtype=np.bool)
+ybp1_mask = np.zeros((ny,nx,),dtype=np.bool)
+
+for j in range(ny):
+    for i in range(nx):
+        def interior(i,j):
+            return  (i<nx - 1) and (j < ny - 1)  and (i > 0) and (j > finvmap[i])
+        inside_mask[j,i] = interior(i,j)
+        ybottom_mask[j,i] = j == finvmap[i]
+        ybp1_mask[j,i] = (j-1) == finvmap[i]
 
 dys =  [fvs[i] - fvs[i-1] for i in range(1, len(fvs))]
 dys2 = [fvs[i+1] - fvs[i-1] for i in range(1,len(fvs) - 1) ]
@@ -80,12 +91,12 @@ dy2 = np.reshape(nx *dys2, ( nx,len(dys2),)).T
 ocf = 2/(dy[1:,1:-1] * dy[:-1,1:-1] * dy2[:,1:-1])
 def get_b(b,u,v):
     #Function for computing inhomogeneous term of the Poisson pressure equation
-    b[1:-1, 1:-1] = rho * (
+    b[inside_mask] = (rho * (
         ((1/dt) * ( ((u[1:-1,2:] - u[1:-1,0:-2])/(2*dx)) + ((v[2:,1:-1] - v[0:-2,1:-1])/dy2[:,1:-1]) ))
         -  ((u[1:-1,2:] - u[1:-1,0:-2])/(2*dx))**2
         - 2*( ((u[2:,1:-1] - u[0:-2,1:-1])/dy2[:,1:-1]) * ((v[1:-1,2:] - v[1:-1,0:-2])/(2*dx)) )
         - ((v[2:,1:-1] - v[0:-2,1:-1])/dy2[:,1:-1])**2 
-        )
+        ))[inside_mask[1:-1,1:-1]]
 
     #Defining pressure boundary conditions along x-axis
     
@@ -125,7 +136,7 @@ def get_pressure(p,u,v,b):
         #    - ( ( ((dx**2)*(dy**2)) / (2*((dx**2) + (dy**2))) ) * b[1:-1,1:-1] ) #The b function as defined above makes my life a lot easier in this line
         #    )
         
-        p[1:-1,1:-1] = da * (-b[1:-1,1:-1] + (pn[1:-1,2:] + pn[1:-1,0:-2])/dx**2 + ocf * (dy[ :-1 , 1:-1] * pn[2:,1:-1] + dy[ 1: , 1:-1] * pn[:-2, 1:-1] ) )
+        p[inside_mask] = (da * (-b[1:-1,1:-1] + (pn[1:-1,2:] + pn[1:-1,0:-2])/dx**2 + ocf * (dy[ :-1 , 1:-1] * pn[2:,1:-1] + dy[ 1: , 1:-1] * pn[:-2, 1:-1] ) ))[inside_mask[1:-1,1:-1]]
 
 
         #Periodic pressure BC at x=xmax
@@ -146,7 +157,7 @@ def get_pressure(p,u,v,b):
         #Wall boundary condition for pressures dp/dy = 0 at walls y=0,ymax
         #Change this to change the shape of channel
         p[-1,:] = p[-2,:] #dp/dy=0 at y=ymax
-        p[0,:] = p[1,:] #dp/dy=0 at y=0
+        p[ybottom_mask] = p[ybp1_mask] #dp/dy=0 at y=0
 
     return p
 
@@ -169,18 +180,18 @@ for n in range(nt): #Iterating through time
 
     #FDM to solve for velocity components
     #x-component of velocity
-    u[1:-1,1:-1] = (un[1:-1,1:-1] - (un[1:-1,1:-1]*(dt/dx)*(un[1:-1,1:-1] - un[1:-1,0:-2]))
+    u[inside_mask] = (un[1:-1,1:-1] - (un[1:-1,1:-1]*(dt/dx)*(un[1:-1,1:-1] - un[1:-1,0:-2]))
     - (vn[1:-1,1:-1]*(dt/dy[:-1,1:-1])*(un[1:-1,1:-1] - un[0:-2,1:-1]))
     - (dt/(rho*2*dx) * (p[1:-1,2:] - p[1:-1,0:-2]))
     + nu*(((dt/dx**2)*(un[1:-1,2:] - (2*un[1:-1,1:-1]) + un[1:-1,0:-2])) 
     + ( ocf * dt * ( dy[:-1,1:-1]*un[2:,1:-1] - (dy[1:,1:-1] + dy[:-1,1:-1]) *un[1:-1,1:-1] + dy[1:,1:-1] * un[0:-2,1:-1])  ))
-    + dt*Fx) #Last line added a force term to represent contribution to the momentum from force being applied.
+    + dt*Fx)[inside_mask[1:-1,1:-1]] #Last line added a force term to represent contribution to the momentum from force being applied.
     #y-component of velocity
-    v[1:-1,1:-1] = (vn[1:-1,1:-1] - (vn[1:-1,1:-1]*(dt/dx)*(vn[1:-1,1:-1] - un[1:-1,0:-2]))
+    v[inside_mask] = (vn[1:-1,1:-1] - (vn[1:-1,1:-1]*(dt/dx)*(vn[1:-1,1:-1] - un[1:-1,0:-2]))
     - (vn[1:-1,1:-1]*(dt/dy[:-1,1:-1])*(vn[1:-1,1:-1] - vn[0:-2,1:-1]))
     - (((dt)/(rho*dy2[:,1:-1])) * (p[2:,1:-1] - p[0:-2,1:-1]))
     + nu*(((dt/(dx**2))*(vn[1:-1,2:] - (2*vn[1:-1,1:-1]) + vn[1:-1,0:-2])) 
-    +( ocf * dt * ( dy[:-1,1:-1]*vn[2:,1:-1] - (dy[1:,1:-1] + dy[:-1,1:-1]) *vn[1:-1,1:-1] + dy[1:,1:-1] * vn[0:-2,1:-1])  )) )
+    +( ocf * dt * ( dy[:-1,1:-1]*vn[2:,1:-1] - (dy[1:,1:-1] + dy[:-1,1:-1]) *vn[1:-1,1:-1] + dy[1:,1:-1] * vn[0:-2,1:-1])  )) )[inside_mask[1:-1,1:-1]]
 
 
     #Wall boundary conditions - change this to change shape of channel
@@ -190,8 +201,10 @@ for n in range(nt): #Iterating through time
     u[-1,:] = 0 #u=0 @ y=ymax
     v[-1,:] = 0 #v=0 @ y=ymax
 
-    u[0,:] = 0 #u=0 @ y=0
-    v[0,:] = 0 #v=0 @ y=0
+    #u[0,:] = 0 #u=0 @ y=0
+    #v[0,:] = 0 #v=0 @ y=0
+    u[ybottom_mask] = 0
+    v[ybottom_mask] = 0
 
 
 #Plots velocity vector throughout fluid
