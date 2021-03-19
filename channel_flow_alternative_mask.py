@@ -61,8 +61,7 @@ def f(x):
     #issues with rounding errors even though this function is symmetric?
     return round(0.75 * np.exp(-(x-4)**2/2),2)
     #return 0
-def f_d(x):
-    return round(-2 * (x-4)* np.exp(-(x-4)**2),3)
+
 #more y grid points are needed for a non symmetric function
 
 fvs = list(set([f(dx*i) for i in range(nx)]))
