@@ -55,10 +55,9 @@ colours = plt.colorbar(stream.lines)
 colours.set_label("Velocity of fluid")
 plt.show()
 
-# streamplot with coloured velocity
+# streamplot with coloured pressure
 fig, ax = plt.subplots()
 
-'''
 X, Y = np.meshgrid(x, y)
 stream = ax.streamplot(X, Y, u, v, density=1, color=p, cmap=plt.cm.Reds, )
 ax.set_title('Fluid Velocities in Unblocked Channel')
@@ -67,4 +66,3 @@ plt.ylabel("Arbitrary length across vessel")
 colours = plt.colorbar(stream.lines)
 colours.set_label("Pressure of fluid particles")
 plt.show()
-'''
