@@ -14,6 +14,11 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+
+#Data save filename and filepath
+fname = 'data_1'
+output_path = 'Output\\' + fname #Don't touch this line
 
 
 #Initialising parameters for simulation grid
@@ -216,3 +221,5 @@ plt.quiver(X[::2, ::10], Y[::2, ::10], u[::2, ::10], v[::2, ::10])
 plt.xlabel('X')
 plt.ylabel('Y')
 plt.show()
+
+np.savez(file=output_path,x_vel=u,y_vel=v,pressure=p,x_coord=X,y_coord=Y)
