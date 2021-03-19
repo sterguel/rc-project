@@ -96,8 +96,20 @@ u_rescale = griddata(original_coords, u.flatten(), rescaled_coords, method='cubi
 v_rescale = griddata(original_coords, v.flatten(), rescaled_coords, method='cubic')
 p_rescale = griddata(original_coords, p.flatten(), rescaled_coords, method='cubic')
 
-#Plotting code goes below this line.
+#Filtering computational artefacts from interpolation
+#Filter thresholds
+u_threshold = 0.005
 
+#Setting velocities under threshold to 0 (As extremely small values are likely a consequence of floating point precision)
+#Made assumption that computational artefacts are characterised by x-velocity
+u_rescale[abs(u_rescale)<u_threshold] = 0
+v_rescale[abs(u_rescale)<u_threshold] = 0
+#Setting corresponding pressures to 0
+p_rescale[abs(u_rescale)<u_threshold] = 0
+
+#Plotting code goes below this line.
+#Calculating magnitude of velocity (speed)
+v_mag = np.sqrt(u_rescale**2 + v_rescale**2)
 
 #Streamplot with coloured velocities
 fig, ax = plt.subplots()
@@ -111,7 +123,7 @@ plt.show()
 
 #Streamplot with coloured pressures
 fig, ax = plt.subplots()
-stream = ax.streamplot(X_rescale, Y_rescale, u_rescale, v_rescale, density = 1, color=u_rescale, cmap=plt.cm.Reds, )
+stream = ax.streamplot(X_rescale, Y_rescale, u_rescale, v_rescale, density = 1, color=v_mag, cmap=plt.cm.Reds, )
 ax.set_title('Fluid Velocities in blocked Channel')
 plt.xlabel("Length along vessel")
 plt.ylabel("Length across vessel")

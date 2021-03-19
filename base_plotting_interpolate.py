@@ -61,4 +61,15 @@ u_rescale = griddata(original_coords, u.flatten(), rescaled_coords, method='cubi
 v_rescale = griddata(original_coords, v.flatten(), rescaled_coords, method='cubic')
 p_rescale = griddata(original_coords, p.flatten(), rescaled_coords, method='cubic')
 
+#Filtering computational artefacts from interpolation
+#Filter thresholds
+u_threshold = 0.005
+
+#Setting velocities under threshold to 0 (As extremely small values are likely a consequence of floating point precision)
+#Made assumption that computational artefacts are characterised by x-velocity
+u_rescale[abs(u_rescale)<u_threshold] = 0
+v_rescale[abs(u_rescale)<u_threshold] = 0
+#Setting corresponding pressures to 0
+p_rescale[abs(u_rescale)<u_threshold] = 0
+
 #Plotting code goes below this line.
