@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 #Data save filename and filepath
-fname = 'data_1'
+fname = 'data_blocked'
 output_path = 'Output\\' + fname #Don't touch this line
 
 

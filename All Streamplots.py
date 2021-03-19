@@ -26,8 +26,43 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 
-#I/O configuration
-fname = 'data_1.npz'
+#I/O configuration for unblocked channel
+fname = 'data_unblocked.npz'
+fpath = 'Output\\' + fname
+
+#Loading the data from the file into numpy arrays
+data = np.load(fpath)
+u  = data['x_vel']
+v = data['y_vel']
+p = data['pressure']
+X = data['x_coord']
+Y = data['y_coord']
+
+#streamplot with coloured velocity for unblocked data
+fig, ax = plt.subplots()
+
+stream = ax.streamplot(X,Y,u,v, density = 1, color=u, cmap=plt.cm.Reds, )
+ax.set_title('Fluid Velocities in Unblocked Channel')
+plt.xlabel("Length along vessel")
+plt.ylabel("Length across vessel")
+colours = plt.colorbar(stream.lines)
+colours.set_label("Velocity of fluid")
+plt.show()
+
+#streamplot with coloured pressures for unblocked data
+fig, ax = plt.subplots()
+
+stream = ax.streamplot(X,Y,u,v, density = 1, color=p, cmap=plt.cm.Reds, )
+ax.set_title('Fluid Velocities in Unblocked Channel')
+plt.xlabel("Length along vessel")
+plt.ylabel("Length across vessel")
+colours = plt.colorbar(stream.lines)
+colours.set_label("Pressure of fluid particles")
+plt.show()
+
+
+#I/O configuration for blocked channels
+fname = 'data_blocked.npz'
 fpath = 'Output\\' + fname
 
 #Loading the data from the file into numpy arrays
@@ -63,6 +98,7 @@ p_rescale = griddata(original_coords, p.flatten(), rescaled_coords, method='cubi
 
 #Plotting code goes below this line.
 
+
 #Streamplot with coloured velocities
 fig, ax = plt.subplots()
 stream = ax.streamplot(X_rescale, Y_rescale, u_rescale, v_rescale, density = 1, color=p_rescale, cmap=plt.cm.Reds, )
@@ -82,3 +118,4 @@ plt.ylabel("Length across vessel")
 colours = plt.colorbar(stream.lines)
 colours.set_label("Velocities of fluid particles")
 plt.show()
+
