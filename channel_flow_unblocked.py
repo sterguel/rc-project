@@ -20,21 +20,25 @@ fname = 'data_unblocked'
 output_path = 'Output\\' + fname 
 
 #Initialising parameters for simulation grid
-nx = 201 #Number of elements in x direction
-ny = 41 #Number of elements in y direction
+nx = 501 #Number of elements in x direction
+ny = 201 #Number of elements in y direction
 nt = 500 #Number of timesteps
-x_range = 8 #Range of x
-y_range = 2 #Range of y
+x_range = 100 #Range of x (Length of modelled section in mm)
+y_range = 12 #Range of y (Diameter of vessel in mm)
+
 dx = x_range/nx #Cell size in x direction
-dy = y_range/ny #Cell size in y direction
-dt = 0.001
+dy = y_range/ny
+
+#dy = y_range/ny #Cell size in y direction
+
+dt = 0.000001
 
 #Defining fluid properties
-rho = 1 #Density of fluid
-nu = 0.1 #Viscosity
+rho = 1.0565e-3 #Density of fluid (g/mm^3)
+nu = 2.57 #Viscosity
 
 #Simulation parameters
-Fx = 1 #Force in x-direction (defined in +x direction)
+Fx = 3.629e5 #Force in x-direction (defined in +x direction) (Defined in g*mm/s^2)
 
 
 
@@ -151,7 +155,7 @@ for n in range(nt): #Iterating through time
     #Setting periodic BCs for velocities
     #Note that the periodic BCs for velocities is commented out.
     #This is because I don't see why velocity should wrap around back to the start for a small, unique section of a blood vessel. Feel free to change if needed.
-    """
+
     #Periodic BC u @ x=xmax
     u[1:-1,-1] = (un[1:-1,-1] - (un[1:-1,-1]*(dt/dx)*(un[1:-1,-1] - un[1:-1,-2]))
     - (vn[1:-1,-1]*(dt/dy)*(un[1:-1,-1] - un[0:-2,-1]))
@@ -176,7 +180,6 @@ for n in range(nt): #Iterating through time
     - (vn[1:-1,0]*(dt/dy)*(vn[1:-1,0] - vn[0:-2,0]))
     - (((dt)/(rho*2*dy)) * (p[2:,0] - p[0:-2,0]))
     + nu*(((dt/(dx**2))*(vn[1:-1,1] - (2*vn[1:-1,0]) + vn[1:-1,-1])) + ((dt/(dy**2))*(vn[2:,0] - (2*vn[1:-1,0]) + vn[0:-2,0]))))
-    """
 
     #Wall boundary conditions - change this to change shape of channel
     u[0,:] = 0 #u=0 @ y=0

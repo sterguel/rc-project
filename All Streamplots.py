@@ -98,7 +98,7 @@ p_rescale = griddata(original_coords, p.flatten(), rescaled_coords, method='cubi
 
 #Filtering computational artefacts from interpolation
 #Filter thresholds
-u_threshold = 0.005
+u_threshold = 5
 
 #Setting velocities under threshold to 0 (As extremely small values are likely a consequence of floating point precision)
 #Made assumption that computational artefacts are characterised by x-velocity

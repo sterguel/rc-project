@@ -39,7 +39,7 @@ rho = 1.0565e-3 #Density of fluid (g/mm^3)
 nu = 2.57 #Viscosity
 
 #Simulation parameters
-Fx = 3.629e5 #Force in x-direction (defined in +x direction)
+Fx = 3.629e5 #Force in x-direction (defined in +x direction) (Defined in g*mm/s^2)
 
 
 
