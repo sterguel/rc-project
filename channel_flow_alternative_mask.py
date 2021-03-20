@@ -22,24 +22,24 @@ output_path = 'Output\\' + fname #Don't touch this line
 
 
 #Initialising parameters for simulation grid
-nx = 150 #Number of elements in x direction
-ny = 101 #Number of elements in y direction
+nx = 501 #Number of elements in x direction
+ny = 201 #Number of elements in y direction
 nt = 500 #Number of timesteps
-x_range = 8 #Range of x
-y_range = 2 #Range of y
+x_range = 100 #Range of x (Length of modelled section in mm)
+y_range = 12 #Range of y (Diameter of vessel in mm)
 
 dx = x_range/nx #Cell size in x direction
 
 #dy = y_range/ny #Cell size in y direction
 
-dt = 0.0001
+dt = 0.000001
 
 #Defining fluid properties
-rho = 1 #Density of fluid
-nu = 0.1 #Viscosity
+rho = 1.0565e-3 #Density of fluid (g/mm^3)
+nu = 2.57 #Viscosity
 
 #Simulation parameters
-Fx = 1 #Force in x-direction (defined in +x direction)
+Fx = 3.629e5 #Force in x-direction (defined in +x direction)
 
 
 
@@ -64,7 +64,7 @@ v[-1,:] = 0
 #calculate actual grid
 def f(x):
     #issues with rounding errors even though this function is symmetric?
-    return round(0.75 * np.exp(-(x-4)**2/2),2)
+    return round(4 * np.exp((-(x-50)**2)/(2*(5**2))),2)
     #return 0
 
 #more y grid points are needed for a non symmetric function

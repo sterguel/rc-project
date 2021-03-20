@@ -75,11 +75,11 @@ Y = data['y_coord']
 
 #Grid parameters
 x_min = 0
-x_max = 8
-nx = 100
+x_max = 100
+nx = 500
 y_min = 0
-y_max = 2
-ny = 25
+y_max = 12
+ny = 150
 
 #Initialising points for evenly spaced data points
 
