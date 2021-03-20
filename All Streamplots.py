@@ -34,30 +34,32 @@ fpath = 'Output\\' + fname
 data = np.load(fpath)
 u  = data['x_vel']
 v = data['y_vel']
-p = data['pressure']
+p = data['pressure']/133.322 #converting to mmHg
 X = data['x_coord']
 Y = data['y_coord']
 
 #streamplot with coloured velocity for unblocked data
 fig, ax = plt.subplots()
 
+p_absolute=abs(p) #taking absolute pressure
+
 stream = ax.streamplot(X,Y,u,v, density = 1.5, color=u, cmap=plt.cm.plasma, )
-ax.set_title('Fluid Velocities in Unblocked Channel')
-plt.xlabel("Length along vessel")
-plt.ylabel("Length across vessel")
+ax.set_title('Fluids in Unblocked Channel')
+plt.xlabel("Length along vessel (mm)")
+plt.ylabel("Length across vessel (mm)")
 colours = plt.colorbar(stream.lines)
-colours.set_label("Velocity of fluid")
+colours.set_label("Velocity of fluid (mm/s)")
 plt.show()
 
 #streamplot with coloured pressures for unblocked data
 fig, ax = plt.subplots()
 
-stream = ax.streamplot(X,Y,u,v, density = 1.5, color=p, cmap=plt.cm.plasma, )
-ax.set_title('Fluid Velocities in Unblocked Channel')
-plt.xlabel("Length along vessel")
-plt.ylabel("Length across vessel")
+stream = ax.streamplot(X,Y,u,v, density = 1.5, color=p_absolute, cmap=plt.cm.plasma, )
+ax.set_title('Fluids in Unblocked Channel')
+plt.xlabel("Length along vessel (mm)")
+plt.ylabel("Length across vessel (mm)")
 colours = plt.colorbar(stream.lines)
-colours.set_label("Pressure of fluid particles")
+colours.set_label("Pressure of fluid particles (mmHg)")
 plt.show()
 
 
@@ -69,7 +71,7 @@ fpath = 'Output\\' + fname
 data = np.load(fpath)
 u  = data['x_vel']
 v = data['y_vel']
-p = data['pressure']
+p = data['pressure']/133.322 #converting to mmHg
 X = data['x_coord']
 Y = data['y_coord']
 
@@ -111,9 +113,13 @@ p_rescale[abs(u_rescale)<u_threshold] = 0
 #Calculating magnitude of velocity (speed)
 v_mag = np.sqrt(u_rescale**2 + v_rescale**2)
 
+#Taking absolute pressure
+
+p_rescale_absolute=abs(p_rescale)
+
 #Streamplot with coloured velocities
 fig, ax = plt.subplots()
-stream = ax.streamplot(X_rescale, Y_rescale, u_rescale, v_rescale, density = 1.5, color=p_rescale, cmap=plt.cm.plasma, )
+stream = ax.streamplot(X_rescale, Y_rescale, u_rescale, v_rescale, density = 1.5, color=p_rescale_absolute, cmap=plt.cm.plasma, )
 ax.set_title('Fluids in Blocked Channel')
 plt.xlabel("Length along vessel (mm)")
 plt.ylabel("Length across vessel (mm)")
