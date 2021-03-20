@@ -1,0 +1,66 @@
+# laminar vector field
+
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+import numpy as np
+import matplotlib.pyplot as plt
+
+from channel_flow import X, Y, x, y
+from channel_flow_alternative_mask import X as W
+from channel_flow_alternative_mask import Y as Z
+from channel_flow_alternative_mask import x as w
+from channel_flow_alternative_mask import y as z
+from channel_flow import u, v
+from channel_flow_alternative_mask import u as m
+from channel_flow_alternative_mask import v as n
+
+X, Y = np.meshgrid(x, y)
+
+fig = plt.figure(figsize=(11, 7), dpi=100)
+plt.quiver(X[::2, ::10], Y[::2, ::10], u[::2, ::10], v[::2, ::10])
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.show()
+
+
+W, Z = np.meshgrid(w, z)
+
+fig = plt.figure(figsize=(11, 7), dpi=100)
+plt.quiver(W[::2, ::10], Z[::2, ::10], m[::2, ::10], n[::2, ::10])
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.show()
+
+
+'''
+a = x - w
+b = y - z
+A, B = np.meshgrid(X - W, Y - Z)
+fig = plt.figure(figsize=(11, 7), dpi=100)
+plt.quiver(A[::2, ::10], B[::2, ::10], u[::2, ::10], v[::2, ::10])
+plt.xlabel('A')
+plt.ylabel('B')
+plt.show()
+'''
+
+
+def eq(self, v):
+    return self.D == v.D and self.f == v.f
+
+# sheer stress is velocity gradient normal to the wall
+# gradient of increase speed from 0 to max (du/dy) times viscosity
+
+
+# max velocity
+maxVelocityUnblockedX = np.amax(u)
+maxVelocityUnblockedY = np.amax(v)
+maxVelocityBlockedX = np.amax(m)
+maxVelocityBlockedY = np.amax(n)
+
+print(maxVelocityUnblockedX, maxVelocityUnblockedY,
+      maxVelocityBlockedX, maxVelocityBlockedY)
+
+# total flow rates
+
+# compare pressure difference between inlet and outlet
+# two scalar values
